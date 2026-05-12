@@ -1,0 +1,36 @@
+# Data directories (heavy files, not versioned)
+data_raw/
+data_processed/
+*.mp4
+*.webm
+*.mkv
+*.avi
+*.parquet
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Node / Next.js
+ui_brutalist/node_modules/
+ui_brutalist/.next/
+ui_brutalist/.env.local
+ui_brutalist/out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

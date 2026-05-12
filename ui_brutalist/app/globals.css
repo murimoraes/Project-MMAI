@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #1a1a1a;
+  --neon: #ccff00;
+  --steel: #2a2a2a;
+  --dim: #404040;
+  --ghost: #888888;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: #ffffff;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--neon);
+  color: #000000;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--steel);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dim);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ghost);
+}
+
+@layer components {
+  .panel {
+    @apply border-2 border-white bg-steel;
+  }
+
+  .panel-neon {
+    @apply border-2 border-neon bg-steel;
+  }
+
+  .label {
+    @apply text-ghost text-2xs uppercase tracking-widest font-mono;
+  }
+
+  .value {
+    @apply text-white font-mono font-bold;
+  }
+
+  .value-neon {
+    @apply text-neon font-mono font-bold;
+  }
+
+  .alert-tag {
+    @apply border border-neon text-neon text-2xs px-2 py-0.5 uppercase tracking-wider font-mono;
+  }
+
+  .badge {
+    @apply border border-dim text-ghost text-2xs px-2 py-0.5 uppercase tracking-wider font-mono;
+  }
+
+  .btn-neon {
+    @apply border-2 border-neon text-neon bg-transparent px-4 py-2 uppercase tracking-widest font-mono font-bold
+           hover:bg-neon hover:text-black transition-colors duration-100 cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply border border-dim text-ghost bg-transparent px-4 py-2 uppercase tracking-widest font-mono text-2xs
+           hover:border-white hover:text-white transition-colors duration-100 cursor-pointer;
+  }
+
+  .stat-row {
+    @apply flex items-baseline justify-between border-b border-dim py-1.5;
+  }
+
+  .section-header {
+    @apply text-neon text-2xs uppercase tracking-widest font-mono border-b-2 border-neon pb-1 mb-3;
+  }
+
+  .meter-bar {
+    @apply h-1.5 bg-dim;
+  }
+
+  .meter-fill {
+    @apply h-full bg-neon transition-all duration-500;
+  }
+}
