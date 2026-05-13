@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import GuardPanel from "@/components/GuardPanel";
 import MovementPanel from "@/components/MovementPanel";
@@ -11,22 +11,42 @@ import GamePlanPanel from "@/components/GamePlanPanel";
 import DataQualityBar from "@/components/DataQualityBar";
 import CampPanel from "@/components/CampPanel";
 import { MOCK_SUBJECT, MOCK_OPPONENT, MOCK_GAMEPLAN } from "@/lib/mock-data";
+import { FightSignature, GamePlan } from "@/lib/types";
 
 type Tab = "subject" | "opponent" | "gameplan";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<Tab>("subject");
+  const [subject, setSubject] = useState<FightSignature>(MOCK_SUBJECT);
+  const [opponent, setOpponent] = useState<FightSignature>(MOCK_OPPONENT);
+  const [gamePlan, setGamePlan] = useState<GamePlan>(MOCK_GAMEPLAN);
+  const [loaded, setLoaded] = useState(false);
 
-  const subject = MOCK_SUBJECT;
-  const opponent = MOCK_OPPONENT;
-  const gamePlan = MOCK_GAMEPLAN;
+  useEffect(() => {
+    fetch("/api/reports")
+      .then((r) => r.json())
+      .then((data: { reports: Record<string, FightSignature | GamePlan> }) => {
+        const reports = data.reports;
+        const keys = Object.keys(reports);
+
+        const subjectKey = keys.find((k) => k.includes("fighter1") || k.includes("subject"));
+        const opponentKey = keys.find((k) => k.includes("adversario") || k.includes("opponent"));
+        const gamePlanKey = keys.find((k) => k.startsWith("gameplan"));
+
+        if (subjectKey) setSubject(reports[subjectKey] as FightSignature);
+        if (opponentKey) setOpponent(reports[opponentKey] as FightSignature);
+        if (gamePlanKey) setGamePlan(reports[gamePlanKey] as GamePlan);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }, []);
 
   return (
     <div className="min-h-screen bg-asphalt">
       <Header
         fighter={subject.fighter}
         opponent={opponent.fighter}
-        status="ANALYSIS READY"
+        status={loaded ? "ANÁLISE PRONTA" : "CARREGANDO..."}
       />
 
       {/* Tab bar */}

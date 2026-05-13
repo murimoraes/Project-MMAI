@@ -72,6 +72,7 @@ def download(url: str, fighter: str, role: str = "subject") -> dict | None:
         "writethumbnail": False,
         "quiet": False,
         "no_warnings": False,
+        "nocheckcertificate": True,
         "progress_hooks": [_progress_hook],
     }
 
