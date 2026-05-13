@@ -178,45 +178,65 @@ Output ONLY valid JSON matching this exact schema:
 Fill all fields with data-driven analysis. For `exploitable_vulnerabilities`, identify at minimum 2 and maximum 5 specific weaknesses. For `camp_recommendations`, provide 4-6 actionable training directives."""
 
 
-def generate_fight_signature(fighter: str, stats: dict, role: str = "opponent") -> dict:
-    """Call Claude API to generate the Fight Signature report."""
+def _call_claude(prompt: str) -> str:
+    """
+    Send prompt to Claude using available backend:
+    1. claude CLI (claude -p) — uses session credentials, no API key needed
+    2. anthropic SDK — requires ANTHROPIC_API_KEY
+    """
+    import subprocess
+    import shutil
+
+    # Prefer claude CLI if available (works in Claude Code sessions)
+    claude_bin = shutil.which("claude")
+    if claude_bin:
+        full_prompt = f"{SYSTEM_PROMPT}\n\n{prompt}"
+        result = subprocess.run(
+            [claude_bin, "-p", full_prompt],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=180,
+            cwd="/tmp",  # isolate from project CLAUDE.md context
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+        print(f"  [WARN] claude CLI stderr: {result.stderr[:200]}")
+
+    # Fallback: anthropic SDK
     try:
         import anthropic
-    except ImportError:
-        print("[ERROR] anthropic not installed. Run: pip install anthropic")
-        sys.exit(1)
-
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        # Check .env file
-        env_path = ROOT / ".env"
-        if env_path.exists():
-            with open(env_path) as f:
-                for line in f:
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            env_path = ROOT / ".env"
+            if env_path.exists():
+                for line in open(env_path):
                     if line.startswith("ANTHROPIC_API_KEY="):
                         api_key = line.strip().split("=", 1)[1]
                         break
+        if api_key:
+            client = anthropic.Anthropic(api_key=api_key)
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=4096,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text.strip()
+    except ImportError:
+        pass
 
-    if not api_key:
-        print("[ERROR] ANTHROPIC_API_KEY not set. Create a .env file or export the variable.")
-        sys.exit(1)
+    print("[ERROR] No Claude backend available. Install anthropic SDK or use claude CLI.")
+    sys.exit(1)
 
-    client = anthropic.Anthropic(api_key=api_key)
 
+def generate_fight_signature(fighter: str, stats: dict, role: str = "opponent") -> dict:
+    """Generate Fight Signature report via Claude (CLI or SDK)."""
     print(f"  [CLAUDE] Generating Fight Signature for {fighter}...")
 
     prompt = _build_analysis_prompt(fighter, stats, role)
+    raw = _call_claude(prompt)
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw = response.content[0].text.strip()
-
-    # Extract JSON from markdown code block if present
     if "```json" in raw:
         raw = raw.split("```json")[1].split("```")[0].strip()
     elif "```" in raw:
@@ -229,9 +249,7 @@ def generate_fight_signature(fighter: str, stats: dict, role: str = "opponent") 
         report = {"raw_response": raw, "parse_error": str(e)}
 
     report["_meta"] = {
-        "model": "claude-sonnet-4-6",
-        "input_tokens": response.usage.input_tokens,
-        "output_tokens": response.usage.output_tokens,
+        "model": "claude-cli",
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -240,23 +258,6 @@ def generate_fight_signature(fighter: str, stats: dict, role: str = "opponent") 
 
 def compare_fighters(subject_report: dict, opponent_report: dict) -> dict:
     """Cross-analyze subject vs opponent to generate tactical game plan."""
-    try:
-        import anthropic
-    except ImportError:
-        sys.exit(1)
-
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        env_path = ROOT / ".env"
-        if env_path.exists():
-            with open(env_path) as f:
-                for line in f:
-                    if line.startswith("ANTHROPIC_API_KEY="):
-                        api_key = line.strip().split("=", 1)[1]
-                        break
-
-    client = anthropic.Anthropic(api_key=api_key)
-
     subject = subject_report.get("fighter", "Subject")
     opponent = opponent_report.get("fighter", "Opponent")
 
@@ -316,14 +317,7 @@ Generate a tactical game plan JSON with this structure:
 
 Output ONLY valid JSON."""
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=3000,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw = response.content[0].text.strip()
+    raw = _call_claude(prompt)
     if "```json" in raw:
         raw = raw.split("```json")[1].split("```")[0].strip()
     elif "```" in raw:
@@ -334,11 +328,7 @@ Output ONLY valid JSON."""
     except json.JSONDecodeError:
         game_plan = {"raw_response": raw}
 
-    game_plan["_meta"] = {
-        "model": "claude-sonnet-4-6",
-        "input_tokens": response.usage.input_tokens,
-        "output_tokens": response.usage.output_tokens,
-    }
+    game_plan["_meta"] = {"model": "claude-cli", "generated_at": datetime.now(timezone.utc).isoformat()}
 
     return game_plan
 
