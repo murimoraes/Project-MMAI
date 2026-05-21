@@ -126,12 +126,12 @@ body {
   }
 
   .badge-neutral {
-    @apply badge bg-white/5 text-cb-muted border border-cb-border-strong;
+    @apply badge bg-white/[0.05] text-cb-muted border border-cb-border-strong;
   }
 
   /* Meter / progress bar */
   .meter-track {
-    @apply h-1.5 bg-white/8 rounded-full overflow-hidden;
+    @apply h-1.5 bg-white/[0.08] rounded-full overflow-hidden;
   }
 
   .meter-fill-blue {

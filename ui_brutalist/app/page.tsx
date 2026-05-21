@@ -82,7 +82,7 @@ export default function HomePage() {
           })}
 
           <div className="flex-1 flex items-center justify-end pb-px">
-            <span className="font-mono text-2xs text-cb-dim">
+            <span className="font-mono text-2xs text-cb-dim" suppressHydrationWarning>
               {new Date().toISOString().replace("T", " ").slice(0, 19)} UTC
             </span>
           </div>
