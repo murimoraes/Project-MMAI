@@ -13,39 +13,41 @@ export default function DataQualityBar({
   durationSeconds,
   fighter,
 }: DataQualityBarProps) {
-  const qualityColor =
-    detectionRate >= 80 ? "#ccff00" : detectionRate >= 60 ? "#ffcc00" : "#ff4444";
-  const qualityLabel =
-    detectionRate >= 80 ? "HIGH" : detectionRate >= 60 ? "MODERATE" : "LOW";
+  const quality =
+    detectionRate >= 80 ? "High" : detectionRate >= 60 ? "Moderate" : "Low";
+  const qualityClass =
+    detectionRate >= 80 ? "badge-success" : detectionRate >= 60 ? "badge-warning" : "badge-danger";
+  const fillClass =
+    detectionRate >= 80 ? "meter-fill-success" : detectionRate >= 60 ? "meter-fill-warning" : "meter-fill-danger";
+
+  const minutes = Math.floor(durationSeconds / 60);
+  const seconds = Math.round(durationSeconds % 60);
 
   return (
-    <div className="border border-dim bg-steel px-4 py-2 flex flex-wrap items-center gap-6">
+    <div className="card px-5 py-3 flex flex-wrap items-center gap-5">
       <div className="flex items-center gap-2">
-        <span className="label">dataset</span>
-        <span className="text-white font-mono text-xs font-bold uppercase">{fighter}</span>
+        <span className="data-label">Dataset</span>
+        <span className="text-sm font-semibold text-cb-text">{fighter}</span>
       </div>
+
       <div className="flex items-center gap-2">
-        <span className="label">detection</span>
-        <span className="font-mono font-bold text-xs" style={{ color: qualityColor }}>
-          {qualityLabel} {detectionRate.toFixed(1)}%
-        </span>
+        <span className="data-label">Detection</span>
+        <span className={qualityClass}>{quality} — {detectionRate.toFixed(1)}%</span>
       </div>
+
       <div className="flex items-center gap-2">
-        <span className="label">frames</span>
-        <span className="text-white font-mono text-xs">{totalFrames.toLocaleString()}</span>
+        <span className="data-label">Frames</span>
+        <span className="font-mono text-xs text-cb-text">{totalFrames.toLocaleString()}</span>
       </div>
+
       <div className="flex items-center gap-2">
-        <span className="label">duration</span>
-        <span className="text-white font-mono text-xs">
-          {Math.floor(durationSeconds / 60)}m {Math.round(durationSeconds % 60)}s
-        </span>
+        <span className="data-label">Duration</span>
+        <span className="font-mono text-xs text-cb-text">{minutes}m {seconds}s</span>
       </div>
-      <div className="flex-1 hidden lg:block">
-        <div className="meter-bar">
-          <div
-            className="h-full transition-all duration-500"
-            style={{ width: `${detectionRate}%`, backgroundColor: qualityColor }}
-          />
+
+      <div className="flex-1 hidden lg:block min-w-[120px]">
+        <div className="meter-track">
+          <div className={fillClass} style={{ width: `${detectionRate}%` }} />
         </div>
       </div>
     </div>

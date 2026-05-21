@@ -10,31 +10,42 @@ function EdgeBadge({ edge, fighters }: { edge: string; fighters: [string, string
   const isSubject = fighters.some(
     (f) => edge.toLowerCase().includes(f.toLowerCase().split(" ")[0])
   );
-  const color = edge === "even" ? "#888888" : isSubject ? "#ccff00" : "#ff4444";
+  if (edge === "even") return <span className="badge-neutral">Even</span>;
   return (
-    <span className="font-mono font-bold text-xs uppercase" style={{ color }}>
-      {edge.toUpperCase()}
+    <span className={isSubject ? "badge-success" : "badge-danger"}>
+      {edge}
     </span>
   );
 }
+
+const EDGE_LABELS: Record<string, string> = {
+  striking_edge: "Striking",
+  grappling_edge: "Grappling",
+  footwork_edge: "Footwork",
+  overall_edge: "Overall",
+};
 
 export default function GamePlanPanel({ data }: GamePlanPanelProps) {
   const fighters = data.matchup.split(" vs ") as [string, string];
 
   return (
-    <div className="panel-neon p-4 space-y-6">
-      <div>
-        <div className="section-header">TACTICAL GAME PLAN</div>
-        <p className="text-ghost font-mono text-2xs">{data.matchup.toUpperCase()}</p>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="card p-5">
+        <p className="section-title mb-1">Tactical Game Plan</p>
+        <p className="text-xl font-bold text-cb-text">{data.matchup}</p>
+        <p className="text-xs text-cb-muted mt-1">
+          Generated {new Date(data.generated_at).toLocaleString()}
+        </p>
       </div>
 
-      {/* Advantage grid */}
-      <div>
-        <span className="label block mb-2">advantage analysis</span>
+      {/* Advantage analysis */}
+      <div className="card p-5">
+        <p className="section-title mb-3">Advantage Analysis</p>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(data.advantage_analysis).map(([key, val]) => (
-            <div key={key} className="border border-dim p-2">
-              <span className="label block">{key.replace(/_/g, " ")}</span>
+            <div key={key} className="rounded-cb-sm bg-cb-elevated border border-cb-border p-3">
+              <p className="data-label mb-1.5">{EDGE_LABELS[key] ?? key.replace(/_/g, " ")}</p>
               <EdgeBadge edge={val} fighters={fighters} />
             </div>
           ))}
@@ -42,60 +53,65 @@ export default function GamePlanPanel({ data }: GamePlanPanelProps) {
       </div>
 
       {/* Round strategy */}
-      <div>
-        <span className="label block mb-2">round strategy</span>
-        <div className="space-y-2">
+      <div className="card p-5">
+        <p className="section-title mb-3">Round Strategy</p>
+        <div className="space-y-3">
           {Object.entries(data.round_strategy).map(([key, val]) => (
             <div key={key} className="flex gap-3">
-              <span className="text-neon font-mono text-2xs uppercase whitespace-nowrap pt-0.5">
-                {key.replace(/_/g, " ")}:
+              <span className="badge-blue flex-shrink-0 self-start mt-0.5">
+                {key.replace(/_/g, " ").replace("rounds", "Rds").replace("round", "Rd")}
               </span>
-              <span className="text-white font-mono text-xs leading-relaxed">{val}</span>
+              <p className="text-sm text-cb-text leading-relaxed">{val}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Exploitation plan */}
-      <div>
-        <span className="label block mb-2">exploitation vectors</span>
+      <div className="card p-5">
+        <p className="section-title mb-3">Exploitation Vectors</p>
         <div className="space-y-3">
           {data.exploitation_plan.map((item, i) => (
-            <div key={i} className="border border-dim p-3">
-              <div className="flex justify-between mb-2">
-                <span className="text-2xs text-ghost uppercase font-mono">EXPLOIT-{String(i + 1).padStart(2, "0")}</span>
-                <span className="text-2xs text-dim font-mono">{item.timing}</span>
+            <div key={i} className="rounded-cb-sm border border-cb-border bg-cb-elevated p-4">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="font-mono text-2xs text-cb-dim uppercase tracking-widest">
+                  Exploit-{String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="badge-neutral">{item.timing}</span>
               </div>
-              <p className="text-red-300 font-mono text-xs mb-1">▲ {item.opponent_weakness}</p>
-              <p className="text-neon font-mono text-xs mb-2">→ {item.our_tool}</p>
-              <p className="text-ghost font-mono text-2xs">DRILL: {item.drill}</p>
+              <p className="text-sm text-cb-danger mb-1.5">↑ {item.opponent_weakness}</p>
+              <p className="text-sm text-cb-blue mb-3">→ {item.our_tool}</p>
+              <div className="pt-2.5 border-t border-cb-border">
+                <p className="data-label mb-1">Camp drill</p>
+                <p className="text-xs text-cb-muted">{item.drill}</p>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* KPIs */}
-      <div>
-        <span className="label block mb-2">key performance indicators</span>
-        <div className="space-y-1">
+      <div className="card p-5">
+        <p className="section-title mb-3">Key Performance Indicators</p>
+        <div className="space-y-2">
           {data.key_performance_indicators.map((kpi, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="text-neon font-mono text-2xs mt-0.5">◆</span>
-              <span className="text-white font-mono text-xs">{kpi}</span>
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-cb-blue flex-shrink-0 mt-2" />
+              <span className="text-sm text-cb-text leading-relaxed">{kpi}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Camp drills */}
-      <div>
-        <span className="label block mb-2">priority camp drills</span>
-        <div className="space-y-2">
+      {/* Priority camp drills */}
+      <div className="card p-5">
+        <p className="section-title mb-3">Priority Camp Drills</p>
+        <div className="space-y-3">
           {data.camp_priority_drills.map((drill, i) => (
-            <div key={i} className="border-l-2 border-neon pl-3">
-              <p className="text-neon font-mono text-xs font-bold">{drill.drill}</p>
-              <p className="text-ghost font-mono text-2xs">{drill.purpose}</p>
-              <p className="text-white font-mono text-2xs">{drill.volume}</p>
+            <div key={i} className="rounded-cb-sm border-l-2 border-cb-blue pl-4 py-2">
+              <p className="text-sm font-semibold text-cb-text mb-0.5">{drill.drill}</p>
+              <p className="text-xs text-cb-muted mb-1">{drill.purpose}</p>
+              <span className="badge-blue">{drill.volume}</span>
             </div>
           ))}
         </div>

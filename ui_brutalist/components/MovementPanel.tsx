@@ -6,57 +6,60 @@ interface MovementPanelProps {
   data: MovementPatterns;
 }
 
-function PressureMeter({ value }: { value: number }) {
-  const pct = value * 100;
-  const color = value > 0.7 ? "#ff4444" : value > 0.4 ? "#ccff00" : "#888888";
-  return (
-    <div>
-      <div className="flex justify-between items-baseline mb-1">
-        <span className="label">pressure index</span>
-        <span className="font-mono font-bold" style={{ color }}>
-          {value.toFixed(2)}
-        </span>
-      </div>
-      <div className="meter-bar w-full">
-        <div className="h-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
-    </div>
-  );
-}
-
 const LATERAL_MAP = {
-  left: { label: "SOUTH-SOUTH-WEST", indicator: "←" },
-  right: { label: "SOUTH-SOUTH-EAST", indicator: "→" },
-  balanced: { label: "BALANCED", indicator: "↔" },
+  left: { label: "Left-biased", icon: "←" },
+  right: { label: "Right-biased", icon: "→" },
+  balanced: { label: "Balanced", icon: "↔" },
+};
+
+const DISTANCE_BADGE: Record<string, string> = {
+  "clinch-seeker": "badge-warning",
+  "mid-range": "badge-blue",
+  boxer: "badge-success",
 };
 
 export default function MovementPanel({ data }: MovementPanelProps) {
   const lateral = LATERAL_MAP[data.lateral_movement_preference];
+  const pressurePct = data.pressure_index * 100;
+  const pressureFill =
+    data.pressure_index > 0.7 ? "meter-fill-danger" : data.pressure_index > 0.4 ? "meter-fill-warning" : "meter-fill-blue";
 
   return (
-    <div className="panel p-4">
-      <div className="section-header">MOVEMENT TELEMETRY</div>
+    <div className="card p-5">
+      <div className="mb-4">
+        <p className="section-title mb-0.5">Movement Telemetry</p>
+      </div>
 
-      <div className="space-y-3">
+      <div className="space-y-0">
         <div className="stat-row">
-          <span className="label">footwork</span>
-          <span className="value text-xs">{data.footwork_style.toUpperCase()}</span>
+          <span className="data-label">Footwork</span>
+          <span className="data-value text-xs">{data.footwork_style}</span>
         </div>
 
         <div className="stat-row">
-          <span className="label">lateral bias</span>
-          <span className="text-neon font-mono font-bold">
-            {lateral.indicator} {data.lateral_movement_preference.toUpperCase()}
+          <span className="data-label">Lateral bias</span>
+          <span className="text-sm font-semibold text-cb-text">
+            {lateral.icon} {lateral.label}
           </span>
         </div>
 
         <div className="stat-row">
-          <span className="label">distance mgmt</span>
-          <span className="value uppercase">{data.distance_management}</span>
+          <span className="data-label">Distance management</span>
+          <span className={DISTANCE_BADGE[data.distance_management] || "badge-neutral"}>
+            {data.distance_management}
+          </span>
         </div>
 
-        <div className="pt-2">
-          <PressureMeter value={data.pressure_index} />
+        <div className="pt-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="data-label">Pressure index</span>
+            <span className="font-mono text-xs font-semibold text-cb-text">
+              {data.pressure_index.toFixed(2)}
+            </span>
+          </div>
+          <div className="meter-track w-full">
+            <div className={pressureFill} style={{ width: `${pressurePct}%` }} />
+          </div>
         </div>
       </div>
     </div>

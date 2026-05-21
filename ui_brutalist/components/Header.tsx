@@ -7,34 +7,48 @@ interface HeaderProps {
 }
 
 export default function Header({ fighter, opponent, status = "LIVE" }: HeaderProps) {
+  const isLive = status === "LIVE" || status === "ANÁLISE PRONTA";
+
   return (
-    <header className="border-b-2 border-white px-6 py-3 flex items-center justify-between bg-asphalt sticky top-0 z-50">
-      <div className="flex items-center gap-6">
-        <div>
-          <span className="text-neon font-mono font-bold text-xs tracking-widest uppercase">
-            TELEMETRY FIGHT LAB
+    <header className="border-b border-cb-border bg-cb-surface/80 backdrop-blur-sm px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+      <div className="flex items-center gap-8">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cb-blue flex items-center justify-center flex-shrink-0">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" stroke="white" strokeWidth="1.5" />
+              <path d="M4 7h6M7 4v6" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <span className="text-cb-text font-semibold text-sm tracking-tight">
+            Telemetry Fight Lab
           </span>
-          <span className="text-dim font-mono text-xs ml-3">// MMA ANALYZER</span>
         </div>
-        <div className="hidden md:flex items-center gap-2 border-l border-dim pl-6">
-          <span className="text-ghost text-2xs uppercase tracking-wider">SUBJECT</span>
-          <span className="text-white font-bold text-sm uppercase tracking-wide">{fighter}</span>
+
+        <div className="hidden md:flex items-center gap-3 border-l border-cb-border pl-6">
+          <div className="flex items-center gap-1.5">
+            <span className="text-cb-muted text-xs">Subject</span>
+            <span className="text-cb-text font-semibold text-sm">{fighter}</span>
+          </div>
           {opponent && (
             <>
-              <span className="text-dim mx-2">VS</span>
-              <span className="text-ghost text-2xs uppercase tracking-wider">OPP</span>
-              <span className="text-white font-bold text-sm uppercase tracking-wide">{opponent}</span>
+              <span className="text-cb-dim text-xs">vs</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-cb-muted text-xs">Opponent</span>
+                <span className="text-cb-text font-semibold text-sm">{opponent}</span>
+              </div>
             </>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 bg-neon rounded-full animate-pulse" />
-          <span className="text-neon text-2xs uppercase tracking-widest font-mono">{status}</span>
+          <span
+            className={`w-2 h-2 rounded-full ${isLive ? "bg-cb-success animate-pulse" : "bg-cb-warning"}`}
+          />
+          <span className="text-cb-muted text-xs font-medium">{status}</span>
         </div>
-        <span className="text-dim text-2xs font-mono">v1.0.0</span>
+        <span className="hidden sm:block text-cb-dim text-xs font-mono">v1.0.0</span>
       </div>
     </header>
   );
